@@ -1,0 +1,159 @@
+/* ─── Google Fonts ─────────────────────────────────────────────────────────── */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap");
+
+@import "tailwindcss";
+
+/* ─── Design Tokens ────────────────────────────────────────────────────────── */
+:root {
+  --font-size: 16px;
+  --background: #0B0F19;
+  --foreground: #E8EAED;
+  --card: #111827;
+  --card-foreground: #E8EAED;
+  --popover: #111827;
+  --popover-foreground: #E8EAED;
+  --primary: #4F7EFF;
+  --primary-foreground: #ffffff;
+  --secondary: #1A2035;
+  --secondary-foreground: #94A3B8;
+  --muted: #1E2840;
+  --muted-foreground: #64748B;
+  --accent: #7C3AED;
+  --accent-foreground: #ffffff;
+  --destructive: #EF4444;
+  --destructive-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.06);
+  --input-background: rgba(255, 255, 255, 0.05);
+  --switch-background: rgba(255, 255, 255, 0.15);
+  --font-weight-medium: 600;
+  --font-weight-normal: 400;
+  --ring: #4F7EFF;
+  --chart-1: #4F7EFF;
+  --chart-2: #7C3AED;
+  --chart-3: #10B981;
+  --chart-4: #F59E0B;
+  --chart-5: #EF4444;
+  --radius: 0.75rem;
+  --sidebar: #0D1321;
+  --sidebar-foreground: #E8EAED;
+  --sidebar-primary: #4F7EFF;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1A2035;
+  --sidebar-accent-foreground: #E8EAED;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-ring: #4F7EFF;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Outfit', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* ─── Base Styles ──────────────────────────────────────────────────────────── */
+@layer base {
+  * {
+    border-color: var(--border);
+    box-sizing: border-box;
+  }
+
+  html {
+    font-size: var(--font-size);
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+}
+
+/* ─── Animation Keyframes ──────────────────────────────────────────────────── */
+@keyframes edgeFade {
+  from { opacity: 0.06; }
+  to   { opacity: 0.40; }
+}
+@keyframes nodePulse {
+  from { opacity: 0.45; }
+  to   { opacity: 1; }
+}
+@keyframes ringPulse {
+  0%, 100% { opacity: 0; r: 1.5; }
+  50%      { opacity: 0.25; r: 3.5; }
+}
+@keyframes shapeFloat {
+  from { transform: translateY(0px); }
+  to   { transform: translateY(-14px); }
+}
+@keyframes orbitSpin {
+  from { transform: var(--ring-tilt, rotateX(72deg)) rotate(0deg); }
+  to   { transform: var(--ring-tilt, rotateX(72deg)) rotate(360deg); }
+}
+@keyframes orbPulse {
+  from { opacity: 0.35; transform: scale(0.85); }
+  to   { opacity: 1;    transform: scale(1.1);  }
+}
+@keyframes pvPulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.9); }
+  50%      { opacity: 0.7; transform: scale(1.05); }
+}
+@keyframes rayPulse {
+  from { opacity: 0.4; }
+  to   { opacity: 1; }
+}
+@keyframes scrollDot {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  80%      { transform: translateY(10px); opacity: 0; }
+}
