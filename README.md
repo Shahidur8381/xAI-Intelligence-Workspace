@@ -2,6 +2,13 @@
 
 > **Transform Raw Data into Intelligence That Acts.**
 
+[![Live Demo](https://img.shields.io/badge/Live-Demo-4F7EFF?style=for-the-badge)](https://x-ai-intelligence-workspace.vercel.app/)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=nextdotjs)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Framer Motion](https://img.shields.io/badge/Motion-Framer-0055FF?style=for-the-badge)](https://motion.dev/)
+[![License](https://img.shields.io/badge/License-Frontend_Assessment-success?style=for-the-badge)](#-license)
+
 Xai Intelligence Workspace is a premium AI-powered intelligence platform interface built to demonstrate modern frontend engineering, interaction design, and product thinking. It showcases a contemporary SaaS experience where raw data is transformed into actionable intelligence through purposeful motion, clear information hierarchy, and reusable UI architecture.
 
 ---
@@ -134,8 +141,8 @@ npm start
 **Figma Design**  
 https://www.figma.com/design/YTlgoOoA8naNgqCd2nnjcs/xAI-figma-design?node-id=1-893&t=uvVd8iRzwAvTrc6o-1
 
-**Live Demo**  
-_To be updated after deployment._
+**Live Demo**   
+✅ https://x-ai-intelligence-workspace.vercel.app/ 
 
 ---
 
