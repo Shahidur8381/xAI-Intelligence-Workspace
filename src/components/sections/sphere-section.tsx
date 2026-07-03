@@ -1,9 +1,10 @@
 "use client";
 
-import { motion } from "motion/react";
+import { useEffect, useRef } from "react";
 import { Sparkles } from "lucide-react";
 import { BLUE, VIOLET, CYAN, EMERALD } from "@/lib/constants";
 import SectionLabel from "@/components/ui/section-label";
+import { gsap, ScrollTrigger } from "@/lib/gsap";
 
 // ─── Pre-computed constants (module level = identical on server & client) ──────
 const rings: [number, string, string, boolean, string][] = [
@@ -20,7 +21,6 @@ const dataChips = [
   { angle: 335, radius: 205, label: "Convergence",    value: "98.1%", color: EMERALD },
 ];
 
-// Round to 4dp to prevent server/client floating-point divergence
 const round = (n: number) => parseFloat(n.toFixed(4));
 
 const particles = Array.from({ length: 32 }, (_, i) => {
@@ -42,11 +42,9 @@ const ORBIT_R       = 148;
 const orbitColors   = [BLUE, VIOLET, CYAN, BLUE, VIOLET];
 const orbitDegrees  = [0, 72, 144, 216, 288];
 
-// Pre-compute orbit node positions — absorb the -5 offset so calc is a single term
 const orbitNodes = orbitDegrees.map((deg, i) => {
   const rad = (deg * Math.PI) / 180;
   return {
-    // left = calc(50% + Xpx), where X already includes the -5 centering offset
     cx: round(Math.cos(rad) * ORBIT_R - 5),
     cy: round(Math.sin(rad) * ORBIT_R - 5),
     color:      orbitColors[i],
@@ -55,7 +53,6 @@ const orbitNodes = orbitDegrees.map((deg, i) => {
   };
 });
 
-// Pre-compute SVG line endpoints (240 = SVG viewBox centre)
 const svgLines = orbitDegrees.map((deg, i) => ({
   x2:         round(240 + Math.cos((deg * Math.PI) / 180) * ORBIT_R),
   y2:         round(240 + Math.sin((deg * Math.PI) / 180) * ORBIT_R),
@@ -64,7 +61,6 @@ const svgLines = orbitDegrees.map((deg, i) => ({
   animDelay:  `${i * 0.2}s`,
 }));
 
-// Pre-compute data-chip positions
 const chipPositions = dataChips.map((chip) => {
   const rad = (chip.angle * Math.PI) / 180;
   return {
@@ -75,8 +71,94 @@ const chipPositions = dataChips.map((chip) => {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function SphereSection() {
+  const sectionRef  = useRef<HTMLElement>(null);
+  const headerRef   = useRef<HTMLDivElement>(null);
+  const cardRef     = useRef<HTMLDivElement>(null);
+  const sphereRef   = useRef<HTMLDivElement>(null);
+  const chipsRef    = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // ── header stagger ───────────────────────────────────────────────────
+      const headerChildren = headerRef.current
+        ? Array.from(headerRef.current.children)
+        : [];
+
+      gsap.fromTo(
+        headerChildren,
+        { opacity: 0, y: 28 },
+        {
+          opacity: 1, y: 0,
+          duration: 0.75,
+          stagger: 0.14,
+          ease: "expo.out",
+          scrollTrigger: {
+            trigger: headerRef.current,
+            start: "top 82%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+
+      // ── card entrance with scrub ─────────────────────────────────────────
+      gsap.fromTo(
+        cardRef.current,
+        { opacity: 0, scale: 0.93, y: 40 },
+        {
+          opacity: 1, scale: 1, y: 0,
+          duration: 1,
+          ease: "expo.out",
+          scrollTrigger: {
+            trigger: cardRef.current,
+            start: "top 80%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+
+      // ── sphere scale-in ──────────────────────────────────────────────────
+      gsap.fromTo(
+        sphereRef.current,
+        { scale: 0.7, opacity: 0, rotate: -15 },
+        {
+          scale: 1, opacity: 1, rotate: 0,
+          duration: 1.2,
+          ease: "back.out(1.4)",
+          scrollTrigger: {
+            trigger: cardRef.current,
+            start: "top 75%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+
+      // ── data chip satellites stagger ─────────────────────────────────────
+      const chips = chipsRef.current
+        ? Array.from(chipsRef.current.querySelectorAll("[data-chip]"))
+        : [];
+
+      gsap.fromTo(
+        chips,
+        { opacity: 0, scale: 0.6 },
+        {
+          opacity: 1, scale: 1,
+          duration: 0.5,
+          stagger: 0.1,
+          ease: "back.out(1.7)",
+          scrollTrigger: {
+            trigger: cardRef.current,
+            start: "top 65%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <section className="py-32 relative overflow-hidden">
+    <section ref={sectionRef} className="py-32 relative overflow-hidden">
       {/* Atmospheric glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full opacity-15"
@@ -88,7 +170,8 @@ export default function SphereSection() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
+        {/* Header */}
+        <div ref={headerRef} className="text-center mb-16">
           <SectionLabel color="violet">Signature Experience</SectionLabel>
           <h2 className="text-[2.6rem] font-['Outfit'] font-bold text-white leading-[1.1] tracking-[-0.02em] mb-4">
             See Intelligence Come Alive
@@ -96,15 +179,13 @@ export default function SphereSection() {
           <p className="text-white/38 max-w-[400px] mx-auto leading-relaxed text-[0.9375rem]">
             A living knowledge graph — continuously reorganizing your data into structured intelligence as new signals arrive.
           </p>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.94 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        {/* Viz card */}
+        <div
+          ref={cardRef}
           className="relative rounded-2xl border border-white/7 overflow-hidden flex items-center justify-center"
-          style={{ height: 640, background: "radial-gradient(ellipse at center, rgba(124,58,237,0.09) 0%, rgba(9,14,26,0.95) 65%)" }}
+          style={{ height: 640, background: "radial-gradient(ellipse at center, rgba(124,58,237,0.09) 0%, rgba(9,14,26,0.95) 65%)", opacity: 0 }}
         >
           {/* Ray burst */}
           <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1200 640" preserveAspectRatio="xMidYMid meet">
@@ -129,7 +210,7 @@ export default function SphereSection() {
           ))}
 
           {/* Sphere system */}
-          <div className="relative flex items-center justify-center" style={{ width: 480, height: 480, perspective: "600px" }}>
+          <div ref={sphereRef} className="relative flex items-center justify-center" style={{ width: 480, height: 480, perspective: "600px", opacity: 0 }}>
 
             {/* 3D orbital rings */}
             {rings.map(([r, tilt, speed, rev, color], i) => (
@@ -160,7 +241,7 @@ export default function SphereSection() {
                 }} />
             ))}
 
-            {/* Orbiting hub nodes — positions pre-computed to avoid SSR mismatch */}
+            {/* Orbiting hub nodes */}
             {orbitNodes.map((node, i) => (
               <div key={i} className="absolute rounded-full"
                 style={{
@@ -175,7 +256,7 @@ export default function SphereSection() {
                 }} />
             ))}
 
-            {/* Connection lines — SVG endpoints pre-computed */}
+            {/* Connection lines */}
             <svg className="absolute inset-0 pointer-events-none" style={{ width: 480, height: 480 }} viewBox="0 0 480 480">
               {svgLines.map((ln, i) => (
                 <line key={i}
@@ -204,22 +285,28 @@ export default function SphereSection() {
               </div>
             </div>
 
-            {/* Data chip satellites — positions pre-computed */}
-            {dataChips.map((chip, i) => (
-              <div key={i} className="absolute px-3 py-2 rounded-xl border"
-                style={{
-                  left: chipPositions[i].left,
-                  top:  chipPositions[i].top,
-                  background: `${chip.color}0A`,
-                  borderColor: `${chip.color}22`,
-                  backdropFilter: "blur(12px)",
-                  animation: `shapeFloat ${3.5 + i * 0.6}s ease-in-out infinite alternate`,
-                  animationDelay: `${i * 0.4}s`,
-                }}>
-                <div className="text-[9px] whitespace-nowrap" style={{ color: `${chip.color}80` }}>{chip.label}</div>
-                <div className="text-[13px] font-['JetBrains_Mono'] font-bold text-white">{chip.value}</div>
-              </div>
-            ))}
+            {/* Data chip satellites — GSAP will stagger them in */}
+            <div ref={chipsRef}>
+              {dataChips.map((chip, i) => (
+                <div
+                  key={i}
+                  data-chip
+                  className="absolute px-3 py-2 rounded-xl border"
+                  style={{
+                    left: chipPositions[i].left,
+                    top:  chipPositions[i].top,
+                    background: `${chip.color}0A`,
+                    borderColor: `${chip.color}22`,
+                    backdropFilter: "blur(12px)",
+                    animation: `shapeFloat ${3.5 + i * 0.6}s ease-in-out infinite alternate`,
+                    animationDelay: `${i * 0.4}s`,
+                    opacity: 0,
+                  }}>
+                  <div className="text-[9px] whitespace-nowrap" style={{ color: `${chip.color}80` }}>{chip.label}</div>
+                  <div className="text-[13px] font-['JetBrains_Mono'] font-bold text-white">{chip.value}</div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Corner metadata */}
@@ -232,7 +319,7 @@ export default function SphereSection() {
             <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: VIOLET }} />
             <span className="text-[10px] text-white/28 font-['JetBrains_Mono']">@react-three/fiber · React Three Fiber placeholder — coming soon</span>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

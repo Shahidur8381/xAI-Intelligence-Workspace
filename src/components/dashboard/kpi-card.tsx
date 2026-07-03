@@ -25,7 +25,7 @@ export default function KPICard({ label, value, change, trend, iconName, iconBg,
           {change}
         </span>
       </div>
-      <div className="font-['JetBrains_Mono'] text-[1.35rem] font-bold text-white leading-none mb-1">{value}</div>
+      <div data-kpi-value className="font-['JetBrains_Mono'] text-[1.35rem] font-bold text-white leading-none mb-1">{value}</div>
       <div className="text-[11px] text-white/35 mb-3">{label}</div>
       <Sparkline values={kpiSparklines[sparkKey]} color={sparkColor} />
     </div>

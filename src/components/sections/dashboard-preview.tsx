@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "motion/react";
+import { useState, useEffect, useRef } from "react";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis,
   Tooltip, ResponsiveContainer, CartesianGrid, Cell,
@@ -18,8 +17,12 @@ import SidebarItem from "@/components/dashboard/sidebar-item";
 import InsightsTable from "@/components/dashboard/insights-table";
 import * as Icons from "lucide-react";
 import type { KPICardProps } from "@/types";
+import { gsap } from "@/lib/gsap";
 
 type LucideIconName = keyof typeof Icons;
+
+// Numeric values for the KPI count-up animation
+const kpiNumerics = [2341, 23, 12, 8];
 
 const kpis: KPICardProps[] = [
   { label: "Total Insights", value: "2,341", change: "+18.6%", trend: "up",   iconName: "Sparkles", iconBg: "bg-blue-500/10",    iconColor: "text-blue-400",    sparkKey: "insights"    },
@@ -41,15 +44,140 @@ const navItems = [
 export default function DashboardPreview() {
   const [activeNav, setActiveNav] = useState("Overview");
 
+  const sectionRef  = useRef<HTMLElement>(null);
+  const headerRef   = useRef<HTMLDivElement>(null);
+  const chromeRef   = useRef<HTMLDivElement>(null);
+  const windowRef   = useRef<HTMLDivElement>(null);
+  const kpiGridRef  = useRef<HTMLDivElement>(null);
+  const chartsRef   = useRef<HTMLDivElement>(null);
+  const bottomRef   = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // ── section header stagger ─────────────────────────────────────────
+      gsap.fromTo(
+        Array.from(headerRef.current?.children ?? []),
+        { opacity: 0, y: 28 },
+        {
+          opacity: 1, y: 0,
+          duration: 0.75,
+          stagger: 0.12,
+          ease: "expo.out",
+          scrollTrigger: {
+            trigger: headerRef.current,
+            start: "top 82%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+
+      // ── window chrome slides down ──────────────────────────────────────
+      gsap.fromTo(
+        windowRef.current,
+        { opacity: 0, y: -24, scale: 0.98 },
+        {
+          opacity: 1, y: 0, scale: 1,
+          duration: 0.9,
+          ease: "expo.out",
+          scrollTrigger: {
+            trigger: windowRef.current,
+            start: "top 80%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+
+      // ── KPI cards count up ─────────────────────────────────────────────
+      const kpiCards = kpiGridRef.current
+        ? Array.from(kpiGridRef.current.children)
+        : [];
+
+      gsap.fromTo(
+        kpiCards,
+        { opacity: 0, y: 20 },
+        {
+          opacity: 1, y: 0,
+          duration: 0.55,
+          stagger: 0.09,
+          ease: "expo.out",
+          scrollTrigger: {
+            trigger: kpiGridRef.current,
+            start: "top 85%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+
+      // Number count-up for each KPI value element
+      kpiCards.forEach((card, i) => {
+        const valueEl = card.querySelector("[data-kpi-value]");
+        if (!valueEl) return;
+        const target = kpiNumerics[i];
+        const obj = { val: 0 };
+        gsap.to(obj, {
+          val: target,
+          duration: 1.6,
+          ease: "power2.out",
+          delay: i * 0.09,
+          onUpdate() {
+            const rounded = Math.round(obj.val);
+            valueEl.textContent = rounded >= 1000
+              ? rounded.toLocaleString()
+              : String(rounded);
+          },
+          scrollTrigger: {
+            trigger: kpiGridRef.current,
+            start: "top 85%",
+            toggleActions: "play none none none",
+          },
+        });
+      });
+
+      // ── charts row fades in ────────────────────────────────────────────
+      gsap.fromTo(
+        chartsRef.current,
+        { opacity: 0, y: 24 },
+        {
+          opacity: 1, y: 0,
+          duration: 0.7,
+          ease: "expo.out",
+          scrollTrigger: {
+            trigger: chartsRef.current,
+            start: "top 88%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+
+      // ── bottom row fades in ────────────────────────────────────────────
+      gsap.fromTo(
+        bottomRef.current,
+        { opacity: 0, y: 24 },
+        {
+          opacity: 1, y: 0,
+          duration: 0.7,
+          ease: "expo.out",
+          scrollTrigger: {
+            trigger: bottomRef.current,
+            start: "top 90%",
+            toggleActions: "play none none none",
+          },
+        }
+      );
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <section className="py-24 relative">
+    <section ref={sectionRef} className="py-24 relative">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px]"
           style={{ background: "radial-gradient(ellipse at bottom, rgba(79,126,255,0.06) 0%, transparent 70%)" }} />
       </div>
 
       <div className="max-w-7xl mx-auto px-6">
-        <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-12">
+        <div ref={headerRef} className="mb-12">
           <SectionLabel color="violet">Dashboard Preview</SectionLabel>
           <h2 className="text-[2.6rem] font-['Outfit'] font-bold text-white leading-[1.1] tracking-[-0.02em] mb-4">
             Built for teams who<br />ship on intelligence.
@@ -57,13 +185,12 @@ export default function DashboardPreview() {
           <p className="text-white/38 max-w-md leading-relaxed text-[0.9375rem]">
             A real product — not a demo. Every element is interactive, every number is live.
           </p>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 36 }} whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }} transition={{ delay: 0.16 }}
+        <div
+          ref={windowRef}
           className="rounded-2xl border border-white/[0.08] overflow-hidden"
-          style={{ background: "#090E1A", boxShadow: "0 40px 120px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05)" }}
+          style={{ background: "#090E1A", boxShadow: "0 40px 120px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05)", opacity: 0 }}
         >
           {/* Window chrome */}
           <div className="flex items-center gap-2 px-5 py-3 border-b border-white/[0.06]" style={{ background: "rgba(255,255,255,0.02)" }}>
@@ -179,12 +306,12 @@ export default function DashboardPreview() {
 
               <div className="flex-1 overflow-y-auto p-5 space-y-4" style={{ scrollbarWidth: "none" }}>
                 {/* KPIs */}
-                <div className="grid grid-cols-4 gap-3">
+                <div ref={kpiGridRef} className="grid grid-cols-4 gap-3">
                   {kpis.map((k) => <KPICard key={k.label} {...k} />)}
                 </div>
 
                 {/* Charts */}
-                <div className="grid grid-cols-5 gap-3">
+                <div ref={chartsRef} className="grid grid-cols-5 gap-3" style={{ opacity: 0 }}>
                   <div className="col-span-3 rounded-xl p-4 border border-white/7" style={{ background: "rgba(255,255,255,0.018)" }}>
                     <div className="flex items-center justify-between mb-3">
                       <div>
@@ -246,7 +373,7 @@ export default function DashboardPreview() {
                 </div>
 
                 {/* Bottom row */}
-                <div className="grid grid-cols-5 gap-3">
+                <div ref={bottomRef} className="grid grid-cols-5 gap-3" style={{ opacity: 0 }}>
                   {/* Activity feed */}
                   <div className="col-span-2 rounded-xl p-4 border border-white/7" style={{ background: "rgba(255,255,255,0.018)" }}>
                     <div className="flex items-center justify-between mb-4">
@@ -320,7 +447,7 @@ export default function DashboardPreview() {
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

@@ -1,14 +1,135 @@
 "use client";
 
-import { motion } from "motion/react";
+import { useEffect, useRef } from "react";
 import { AlertCircle, ArrowRight, Play } from "lucide-react";
 import { BLUE, VIOLET } from "@/lib/constants";
 import Btn from "@/components/ui/btn";
 import ParticleNetwork from "@/components/visualizations/particle-network";
+import { gsap } from "@/lib/gsap";
+
+// ── stat definitions ──────────────────────────────────────────────────────────
+const stats = [
+  { value: "2.4B+", label: "Data points / day",  sub: "across all sources", numeric: 2.4, suffix: "B+"  },
+  { value: "99.9%", label: "Platform uptime",     sub: "SLA guaranteed",     numeric: 99.9, suffix: "%" },
+  { value: "140ms", label: "Avg. inference",      sub: "p95 latency",        numeric: 140,  suffix: "ms" },
+];
 
 export default function HeroSection() {
+  const sectionRef  = useRef<HTMLElement>(null);
+  const badgeRef    = useRef<HTMLDivElement>(null);
+  const headingRef  = useRef<HTMLHeadingElement>(null);
+  const paraRef     = useRef<HTMLParagraphElement>(null);
+  const btnsRef     = useRef<HTMLDivElement>(null);
+  const statsRef    = useRef<HTMLDivElement>(null);
+  const trustRef    = useRef<HTMLDivElement>(null);
+  const cardRef     = useRef<HTMLDivElement>(null);
+  const anomalyRef  = useRef<HTMLDivElement>(null);
+  const confRef     = useRef<HTMLDivElement>(null);
+  const stat0Ref    = useRef<HTMLDivElement>(null);
+  const stat1Ref    = useRef<HTMLDivElement>(null);
+  const stat2Ref    = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // ── master timeline ──────────────────────────────────────────────────
+      const tl = gsap.timeline({ defaults: { ease: "expo.out", duration: 0.8 } });
+
+      // badge
+      tl.fromTo(badgeRef.current,
+        { opacity: 0, y: 18 },
+        { opacity: 1, y: 0 }
+      );
+
+      // heading lines stagger
+      const lines = headingRef.current
+        ? Array.from(headingRef.current.querySelectorAll("span"))
+        : [];
+      tl.fromTo(lines,
+        { opacity: 0, y: 32, skewX: -4 },
+        { opacity: 1, y: 0, skewX: 0, stagger: 0.12, duration: 0.75 },
+        "-=0.5"
+      );
+
+      // paragraph
+      tl.fromTo(paraRef.current,
+        { opacity: 0, y: 16 },
+        { opacity: 1, y: 0, duration: 0.65 },
+        "-=0.5"
+      );
+
+      // buttons
+      tl.fromTo(btnsRef.current,
+        { opacity: 0, y: 14 },
+        { opacity: 1, y: 0, duration: 0.55 },
+        "-=0.4"
+      );
+
+      // stats strip
+      tl.fromTo(statsRef.current,
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: 0.55 },
+        "-=0.35"
+      );
+
+      // trust strip
+      tl.fromTo(trustRef.current,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.5 },
+        "-=0.3"
+      );
+
+      // right card
+      tl.fromTo(cardRef.current,
+        { opacity: 0, scale: 0.92, y: 20 },
+        { opacity: 1, scale: 1, y: 0, duration: 1.1, ease: "expo.out" },
+        0.18               // start near the beginning
+      );
+
+      // anomaly chip
+      tl.fromTo(anomalyRef.current,
+        { opacity: 0, x: -14 },
+        { opacity: 1, x: 0, duration: 0.5, ease: "power2.out" },
+        "-=0.5"
+      );
+
+      // confidence chip
+      tl.fromTo(confRef.current,
+        { opacity: 0, x: 14 },
+        { opacity: 1, x: 0, duration: 0.5, ease: "power2.out" },
+        "<"
+      );
+
+      // ── number counters (start when stats are visible) ───────────────────
+      const statRefs = [stat0Ref, stat1Ref, stat2Ref];
+      stats.forEach((s, i) => {
+        const el = statRefs[i].current;
+        if (!el) return;
+        const obj = { val: 0 };
+        tl.to(obj,
+          {
+            val: s.numeric,
+            duration: 1.4,
+            ease: "power2.out",
+            onUpdate() {
+              const v = s.suffix === "B+"
+                ? obj.val.toFixed(1) + s.suffix
+                : s.suffix === "%"
+                  ? obj.val.toFixed(1) + s.suffix
+                  : Math.round(obj.val) + s.suffix;
+              el.textContent = v;
+            },
+          },
+          // offset each counter slightly
+          "-=1.2" + (i > 0 ? "" : "")
+        );
+      });
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <section className="relative min-h-screen flex items-center pt-16 overflow-hidden">
+    <section ref={sectionRef} className="relative min-h-screen flex items-center pt-16 overflow-hidden">
       {/* Layered atmosphere */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[15%] left-1/2 -translate-x-1/2 w-[1000px] h-[600px] rounded-full opacity-20"
@@ -25,83 +146,78 @@ export default function HeroSection() {
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-24 grid lg:grid-cols-[1fr_1.15fr] gap-20 items-center w-full">
         {/* Left: Copy */}
-        <div>
-          <motion.div initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1] }}>
-            {/* Version badge */}
-            <div className="inline-flex items-center gap-2.5 mb-8">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/20 bg-primary/[0.07] cursor-default">
-                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                <span className="text-xs text-primary font-semibold">Intelligence Platform v2.0 — Now in GA</span>
+        <div className="relative z-10">
+          {/* Version badge */}
+          <div ref={badgeRef} className="inline-flex items-center gap-2.5 mb-8" style={{ opacity: 0 }}>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/20 bg-primary/[0.07] cursor-default">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+              <span className="text-xs text-primary font-semibold">Intelligence Platform v2.0 — Now in GA</span>
+            </div>
+          </div>
+
+          <h1
+            ref={headingRef}
+            className="font-['Outfit'] font-bold text-white leading-[1.04] tracking-[-0.025em] mb-7"
+            style={{ fontSize: "clamp(2.75rem, 5vw, 4.5rem)" }}
+          >
+            <span className="bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent block"
+              style={{ opacity: 0 }}>
+              Transform Raw Data
+            </span>
+            <span style={{ background: `linear-gradient(125deg, ${BLUE}, ${VIOLET}, #A855F7)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", display: "block", opacity: 0 }}>
+              into Intelligence
+            </span>
+            <span className="bg-gradient-to-r from-white/90 to-white/60 bg-clip-text text-transparent block"
+              style={{ opacity: 0 }}>
+              That Acts.
+            </span>
+          </h1>
+
+          <p ref={paraRef} className="text-[1.0625rem] text-white/45 leading-[1.7] mb-9 max-w-[400px]" style={{ opacity: 0 }}>
+            Xai unifies your data, applies foundation AI, and delivers clear decisions — not dashboards you have to interpret.
+          </p>
+
+          <div ref={btnsRef} className="flex items-center gap-3 flex-wrap mb-10" style={{ opacity: 0 }}>
+            <Btn variant="primary">
+              Explore Workspace <ArrowRight size={14} />
+            </Btn>
+            <Btn variant="secondary">
+              <div className="w-6 h-6 rounded-full flex items-center justify-center border border-white/20">
+                <Play size={10} fill="currentColor" className="ml-0.5" />
               </div>
-            </div>
+              Watch 90s demo
+            </Btn>
+          </div>
 
-            <h1
-              className="font-['Outfit'] font-bold text-white leading-[1.04] tracking-[-0.025em] mb-7"
-              style={{ fontSize: "clamp(2.75rem, 5vw, 4.5rem)" }}
-            >
-              <span className="bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent">
-                Transform Raw Data
-              </span>
-              <br />
-              <span style={{ background: `linear-gradient(125deg, ${BLUE}, ${VIOLET}, #A855F7)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                into Intelligence
-              </span>
-              <br />
-              <span className="bg-gradient-to-r from-white/90 to-white/60 bg-clip-text text-transparent">
-                That Acts.
-              </span>
-            </h1>
-
-            <p className="text-[1.0625rem] text-white/45 leading-[1.7] mb-9 max-w-[400px]">
-              Xai unifies your data, applies foundation AI, and delivers clear decisions — not dashboards you have to interpret.
-            </p>
-
-            <div className="flex items-center gap-3 flex-wrap mb-10">
-              <Btn variant="primary">
-                Explore Workspace <ArrowRight size={14} />
-              </Btn>
-              <Btn variant="secondary">
-                <div className="w-6 h-6 rounded-full flex items-center justify-center border border-white/20">
-                  <Play size={10} fill="currentColor" className="ml-0.5" />
+          {/* Stats strip */}
+          <div ref={statsRef} className="grid grid-cols-3 gap-0 border-t border-white/[0.08] pt-8" style={{ opacity: 0 }}>
+            {stats.map(({ value, label, sub }, i) => (
+              <div key={label} className={`pr-6 ${i > 0 ? "pl-6 border-l border-white/[0.08]" : ""}`}>
+                <div
+                  ref={i === 0 ? stat0Ref : i === 1 ? stat1Ref : stat2Ref}
+                  className="font-['JetBrains_Mono'] text-[1.6rem] font-bold text-white leading-none"
+                >
+                  {value}
                 </div>
-                Watch 90s demo
-              </Btn>
-            </div>
+                <div className="text-[11px] text-white/50 mt-1 font-medium">{label}</div>
+                <div className="text-[10px] text-white/25 mt-0.5">{sub}</div>
+              </div>
+            ))}
+          </div>
 
-            {/* Stats strip */}
-            <div className="grid grid-cols-3 gap-0 border-t border-white/[0.08] pt-8">
-              {[
-                { value: "2.4B+", label: "Data points / day", sub: "across all sources" },
-                { value: "99.9%", label: "Platform uptime",   sub: "SLA guaranteed"     },
-                { value: "140ms", label: "Avg. inference",    sub: "p95 latency"         },
-              ].map(({ value, label, sub }, i) => (
-                <div key={label} className={`pr-6 ${i > 0 ? "pl-6 border-l border-white/[0.08]" : ""}`}>
-                  <div className="font-['JetBrains_Mono'] text-[1.6rem] font-bold text-white leading-none">{value}</div>
-                  <div className="text-[11px] text-white/50 mt-1 font-medium">{label}</div>
-                  <div className="text-[10px] text-white/25 mt-0.5">{sub}</div>
-                </div>
+          {/* Trust strip */}
+          <div ref={trustRef} className="mt-8 pt-6 border-t border-white/[0.06]" style={{ opacity: 0 }}>
+            <p className="text-[10px] text-white/22 uppercase tracking-[0.14em] font-semibold mb-3">Trusted by engineering teams at</p>
+            <div className="flex items-center gap-5 flex-wrap">
+              {["Meridian Corp", "Nexus Financial", "Apex Analytics", "Orbit Systems", "Quantum Labs"].map((name) => (
+                <span key={name} className="text-xs text-white/22 font-semibold tracking-tight">{name}</span>
               ))}
             </div>
-
-            {/* Trust strip */}
-            <div className="mt-8 pt-6 border-t border-white/[0.06]">
-              <p className="text-[10px] text-white/22 uppercase tracking-[0.14em] font-semibold mb-3">Trusted by engineering teams at</p>
-              <div className="flex items-center gap-5 flex-wrap">
-                {["Meridian Corp", "Nexus Financial", "Apex Analytics", "Orbit Systems", "Quantum Labs"].map((name) => (
-                  <span key={name} className="text-xs text-white/22 font-semibold tracking-tight">{name}</span>
-                ))}
-              </div>
-            </div>
-          </motion.div>
+          </div>
         </div>
 
         {/* Right: Network viz card */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.93, y: 16 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
-          className="relative"
-        >
+        <div ref={cardRef} className="relative" style={{ opacity: 0 }}>
           <div
             className="relative h-[540px] rounded-2xl border border-white/[0.08] overflow-hidden"
             style={{ background: "radial-gradient(ellipse at 30% 30%, rgba(79,126,255,0.08) 0%, rgba(11,15,25,0.6) 60%)" }}
@@ -126,27 +242,23 @@ export default function HeroSection() {
             </div>
 
             {/* Anomaly alert — bottom left */}
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 1.2, duration: 0.5 }}
+            <div
+              ref={anomalyRef}
               className="absolute bottom-14 left-4 px-3 py-2.5 rounded-xl border border-amber-500/25 max-w-[200px]"
-              style={{ background: "rgba(245,158,11,0.06)", backdropFilter: "blur(16px)" }}
+              style={{ background: "rgba(245,158,11,0.06)", backdropFilter: "blur(16px)", opacity: 0 }}
             >
               <div className="flex items-center gap-1.5 mb-1">
                 <AlertCircle size={10} className="text-amber-400" />
                 <span className="text-[10px] text-amber-400 font-semibold">Anomaly · APAC</span>
               </div>
               <div className="text-[10px] text-white/45 leading-relaxed">Revenue deviation −8.3% detected in cluster 3</div>
-            </motion.div>
+            </div>
 
             {/* Model confidence — bottom right */}
-            <motion.div
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 1.5, duration: 0.5 }}
+            <div
+              ref={confRef}
               className="absolute bottom-14 right-4 px-3 py-2.5 rounded-xl border border-violet-500/25"
-              style={{ background: "rgba(124,58,237,0.08)", backdropFilter: "blur(16px)" }}
+              style={{ background: "rgba(124,58,237,0.08)", backdropFilter: "blur(16px)", opacity: 0 }}
             >
               <div className="text-[10px] text-white/35 font-['JetBrains_Mono'] mb-1">Atlas Model · confidence</div>
               <div className="flex items-center gap-2">
@@ -155,9 +267,9 @@ export default function HeroSection() {
                 </div>
                 <span className="text-[11px] font-['JetBrains_Mono'] font-bold text-violet-400">94%</span>
               </div>
-            </motion.div>
+            </div>
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* Scroll cue */}
