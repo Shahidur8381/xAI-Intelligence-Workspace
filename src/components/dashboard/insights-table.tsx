@@ -30,10 +30,10 @@ export default function InsightsTable() {
         <tbody>
           {recentInsights.map((row, i) => (
             <tr key={row.id}
-              className={`group hover:bg-white/[0.015] transition-colors cursor-pointer ${i < recentInsights.length - 1 ? "border-b border-white/4" : ""}`}
+              className={`group hover:bg-white/1.5 transition-colors cursor-pointer ${i < recentInsights.length - 1 ? "border-b border-white/4" : ""}`}
             >
               <td className="px-5 py-2.5 text-[10px] font-['JetBrains_Mono'] text-white/22">{row.id}</td>
-              <td className="px-5 py-2.5 text-[11px] text-white/55 max-w-[260px]">{row.title}</td>
+              <td className="px-5 py-2.5 text-[11px] text-white/55 max-w-65">{row.title}</td>
               <td className="px-5 py-2.5">
                 <Tag color={
                   row.type === "Anomaly" ? "amber" : row.type === "Alert" ? "amber" :
